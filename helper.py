@@ -1,12 +1,9 @@
-from genericpath import exists
+from engine.JitObject import JitObject
 import os
 import argparse
-import collections
 from engine.JitRepository import JitRepository
-import hashlib
-import re
 import sys
-import zlib
+from engine.utils import Util
 
 
 # preparing argparsere
@@ -18,6 +15,31 @@ argsp = argsubparsers.add_parser("init", help="Initialize a new , empty reposito
 argsp.add_argument("path", metavar="Directory", nargs="?",default= ".", help = "location to create the epository")
 
 
+argsp = argsubparsers.add_parser("cat-file", help="Provide content of repository objects")
+argsp.add_argument("type", metavar="type",
+ choices=["blob", "commit", "tag", "tree"],
+ help = "Specify the type")
+
+argsp.add_argument("object", metavar="object",
+ help="The object to display")
+argsp = argsubparsers.add_parser(
+    "hash-object",
+    help="Compute object ID and optionally creates a blob from a file")
+
+argsp.add_argument("-t",
+                   metavar="type",
+                   dest="type",
+                   choices=["blob", "commit", "tag", "tree"],
+                   default="blob",
+                   help="Specify the type")
+
+argsp.add_argument("-w",
+                   dest="write",
+                   action="store_true",
+                   help="Actually write the object into the database")
+
+argsp.add_argument("path",
+                   help="Read object from <file>")
 
 # main function
 def main(argv = sys.argv[1:]):
@@ -78,3 +100,39 @@ def create_repo(path):
 		
 def jit_init(args):
     create_repo(args.path)
+
+
+
+def cat_file(repo, obj, fmt= None):
+    jitobject = JitObject(repo)
+    sha = jitobject.object_find(obj, fmt= fmt)
+    obj = jitobject.object_read(sha)
+    sys.stdout.buffer.write(obj.serialize())
+def jit_cat_file(args):
+    repo = Util.find_repo()
+    cat_file(repo, args.object, fmt= args.type.encode())
+
+def object_hash(fd, fmt, repo= None):
+    data = fd.read()
+
+    if fmt== b'commit' : obj= JitCommit(repo,data)
+    elif fmt == b'tree' :obj = JitTree(repo,data)
+    elif fmt == b'tag'  : obj = JitTag(repo,data)
+    elif fmt = b'blob'  : obj = GitBlob(repo, data)
+
+    else:
+        raise Exception("Unknown type %s!" % fmt)
+    
+    jitobject = JitObject(repo)
+    
+    return jitobject.object_write(obj)
+
+def jit_hash_object(args):
+    if args.write:
+        repo = JitRepository(".")
+    else:
+        repo = None
+    
+    with open(args.path, 'rb') as fd:
+        sha = object_hash(fd, args.type.encode(), repo)
+        print(sha)

@@ -1,6 +1,6 @@
 import hashlib
 import zlib
-class GitObject(object):
+class JitObject(object):
 	repo = None
 
 	def __init__(self, repo , data = None):
@@ -52,23 +52,23 @@ class GitObject(object):
 			return c(self.repo, raw[y+1:])
 
 
-		def object_write(self, obj, actually_write = True):
+	def object_write(self, obj, actually_write = True):
 			#serialize object data
-			data = obj.serialize()
+		data = obj.serialize()
 
 			# add header
-			result = obj.fmt + b'' + str(len(data)).encode() + b'\x00' + data
+		result = obj.fmt + b'' + str(len(data)).encode() + b'\x00' + data
 
 			# compute hash 
-			sha = hashlib.sha1(result).hexdigest()
+		sha = hashlib.sha1(result).hexdigest()
 
-			if actually_write:
-				#compute path 
-				path = self.repo.repo_file("objects", sha[0:2], sha[2:], mkdir= actually_write)
+		if actually_write:
+			#compute path 
+			path = self.repo.repo_file("objects", sha[0:2], sha[2:], mkdir= actually_write)
 
-				with open(path, 'wb') as f:
-					f.write(zlib.compress(result))
-			return sha
+			with open(path, 'wb') as f:
+				f.write(zlib.compress(result))
+		return sha
 
 	def object_find(self, name, fmt = None, follow = True):
 		return name
