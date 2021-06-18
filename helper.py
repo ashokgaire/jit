@@ -40,6 +40,11 @@ argsp.add_argument("-w",
 
 argsp.add_argument("path",
                    help="Read object from <file>")
+argsp = argsubparsers.add_parser("log", help="Display history of a given commit.")
+argsp.add_argument("commit",
+                   default="HEAD",
+                   nargs="?",
+                   help="Commit to start at.")
 
 # main function
 def main(argv = sys.argv[1:]):
@@ -136,3 +141,30 @@ def jit_hash_object(args):
     with open(args.path, 'rb') as fd:
         sha = object_hash(fd, args.type.encode(), repo)
         print(sha)
+def log_graphv(jit_object, sha, seen):
+    if sha in seen:
+        return
+    seen.add(sha)
+
+    commit = jit_object.object_read(sha)
+    assert(commit.fmt == b'commit')
+
+    if not b'parent' in commit.kvlm.keys():
+        return 
+    
+    parents = commit.kvlm[b'parent']
+
+    if type(parents) != list:
+        parents = [parents]
+    
+    for p in parents:
+        p = p.decode("ascii")
+        print("c_{0} -> c_{1};".format(sha, p))
+        log_graphv(jit_object, p ,seen)
+def cmd_log(args):
+    repo = Util.find_repo()
+
+    print("diagraph JitLog{")
+    jit_obj = JitObject(repo)
+    log_graphv(jit_obj,jit_obj.object_find(args.commit), set())
+    print('}')
