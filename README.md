@@ -3,8 +3,8 @@ jit is an clone of orginal git written in python(is my effort to learn the inter
 
 
 references:
-https://git-scm.com/docs
-https://thoughtbot.com/blog/rebuilding-git-in-ruby
-https://benhoyt.com/writings/pygit/
-https://wyag.thb.lt/
+-https://git-scm.com/docs
+-https://thoughtbot.com/blog/rebuilding-git-in-ruby
+-https://benhoyt.com/writings/pygit/
+-https://wyag.thb.lt/
 
