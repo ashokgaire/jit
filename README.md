@@ -3,7 +3,7 @@ jit is an clone of orginal git written in python(is my effort to learn the inter
 
 
 # ToDo:
-- [ ] Branching
+- [x] Branching
 - [ ] Staging
 - [ ] Mergining
 - [ ] Many More
