@@ -1,5 +1,5 @@
 # jit
-jit is a clone of orginal git , written in python
+jit is an clone of orginal git written in python(is my effort to learn the internal working of git system)
 
 
 references:
